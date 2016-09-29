@@ -1,0 +1,39 @@
+require 'launchy'
+require 'byebug'
+
+puts "\nInput your email:"
+email = gets.chomp
+
+user = nil
+if User.exists?(email: email)
+  user = User.find_by email: email
+else
+  user = User.create(email: email)
+end
+
+puts "\nWhat do you want to do?"
+puts "0. Create shortened URL"
+puts "1. Visit shortened URL"
+action = gets.chomp.to_i
+
+if action == 0
+  puts "\nType in your long url"
+  long_url = gets.chomp
+
+
+  s = ShortenedUrl.create_for_user_and_long_url!(user, long_url)
+
+  puts "\nShort url is #{s[:short_url]}"
+else
+  puts "\nType in the shortened URL"
+  short_url = gets.chomp
+
+  s = ShortenedUrl.find_by short_url: short_url
+
+  long_url = s[:long_url]
+
+  puts "\nLaunching #{long_url}"
+  Visit.record_visit(user, s)
+  Launchy.open(long_url)
+end
+puts "Goodbye!"
